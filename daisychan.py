@@ -3,6 +3,7 @@ import re
 import shutil
 from tkinter.messagebox import showinfo, showerror
 from tkinter.filedialog import askdirectory
+from html import entities
 import xml.etree.ElementTree as ET
 import zipfile
 
@@ -41,7 +42,9 @@ def parse(path: pathlib.Path):
     with zipfile.ZipFile(path) as z:
         ncc_html = sorted([f for f in z.namelist() if f.endswith("ncc.html")])[0]
         ncc_html = z.read(ncc_html)
-        xml = ET.fromstring(ncc_html)
+        parser = ET.XMLParser()
+        parser.entity.update(entities.html5)
+        xml = ET.fromstring(ncc_html, parser=parser)
         meta = {e.get("name"): e.get("content") for e in xml.find("{http://www.w3.org/1999/xhtml}head").findall("{http://www.w3.org/1999/xhtml}meta")}
         title = meta["dc:title"]
         author = meta["dc:creator"]
